@@ -1,0 +1,12 @@
+.container-fluid {
+  margin: 0 auto;  
+  width: 974px;
+}
+.jumbotron {
+text-align: center;
+background-color: blue;
+}
+
+.thead-light {
+    color:blue;
+}
