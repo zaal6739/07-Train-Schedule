@@ -18,15 +18,15 @@ $(document).ready(function () {
   $('#submitNewTrain').on('click',function(){
 // hold user inputs in variables
   var train = $('#inputTrainName').val().trim();
-  var destination = $('inputDestination').val().trim();
-  var frequency = $('inputFrequency').val().trim();
-  var arrival = moment($('inputArrival').val().trim(),'hh:mm').subtract(10,'years').format('X');
+  var destination = $('#inputDestination').val().trim();
+  var frequency = $('#inputFrequency').val().trim();
+  var arrival = moment($('#inputArrival').val().trim(),'hh:mm').subtract(1,'years').format('X');
   // var minutesAway = $('inputMinutes').val().trim();
 
   var userTrain = {
                   TrainName: train,  Dest: destination
                   ,  Freq: frequency, NextArrival:arrival
-                  , MinutesAway: MinutesAway
+                  // , MinutesAway: MinutesAway
                   };
 
   console.log(train);
@@ -37,16 +37,30 @@ $(document).ready(function () {
 
 // push user inputs to the database
   database.ref().push(userTrain);
-  
-//clear user input fields
-  $('inputTrainName').val("")
-  $('inputDestination').val("")
-  $('inputFrequency').val("")
-  $('inputArrival').val("")
 
+//clear user input fields
+  $('#inputTrainName').val("")
+  $('#inputDestination').val("")
+  $('#inputFrequency').val("")
+  $('#inputArrival').val("")
 
   });
 
+database.ref().on("child_added", function (childSnapshot) {
 
+var ftrain = childSnapshot.val().TrainName;
+var fdestination = childSnapshot.val().Dest;
+var ffreq = childSnapshot.val().Freq;
+
+var timeNow = moment();
+
+var timeSpread = timeNow-timeArrival
+console.log(ftrain);
+console.log(fdestination);
+console.log(ffreq);
+
+$('#timeTable').append('<tr><td>'+ftrain+'</td><td>'+fdestination+'</td><td>'+ffreq+'</td></tr>');
+
+})
 
 });
