@@ -20,13 +20,12 @@ $(document).ready(function () {
   var train = $('#inputTrainName').val().trim();
   var destination = $('#inputDestination').val().trim();
   var frequency = $('#inputFrequency').val().trim();
-  var arrival = moment($('#inputArrival').val().trim(),'hh:mm').subtract(1,'years').format('X');
+  var arrival = moment($('#inputArrival').val().trim(), 'HH:mm').subtract(1,'years');
   // var minutesAway = $('inputMinutes').val().trim();
 
   var userTrain = {
                   TrainName: train,  Dest: destination
                   ,  Freq: frequency, NextArrival:arrival
-                  // , MinutesAway: MinutesAway
                   };
 
   console.log(train);
@@ -51,15 +50,25 @@ database.ref().on("child_added", function (childSnapshot) {
 var ftrain = childSnapshot.val().TrainName;
 var fdestination = childSnapshot.val().Dest;
 var ffreq = childSnapshot.val().Freq;
+var farrival = childSnapshot.val().NextArrival;
 
-var timeNow = moment();
 
-var timeSpread = timeNow-timeArrival
+		var modulus = moment().diff(moment.unix(farrival), "minutes") % ffreq ;
+		var minutesLeft = ffreq - modulus;
+
+	
+
 console.log(ftrain);
 console.log(fdestination);
 console.log(ffreq);
+console.log(farrival);
 
-$('#timeTable').append('<tr><td>'+ftrain+'</td><td>'+fdestination+'</td><td>'+ffreq+'</td></tr>');
+$('#timeTable').append('<tr><td>'
++ftrain+'</td><td>'
++fdestination+'</td><td>'
++ffreq+'</td><td>'
++farrival+'</td><td>'
++minutesLeft+'</td></tr>');
 
 })
 
