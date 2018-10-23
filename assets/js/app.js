@@ -1,75 +1,77 @@
-$(document).ready(function () {
-  //initialize firebase
-  var config = {
-    apiKey: "AIzaSyDTSO19CMJuHbzVeQM_97r2tMbEcX6atnU",
-   authDomain: "trainscheduler-d471e.firebaseapp.com",
-    databaseURL: "https://trainscheduler-d471e.firebaseio.com",
-    projectId: "trainscheduler-d471e",
-    storageBucket: "trainscheduler-d471e.appspot.com",
-     messagingSenderId: '247427046990'
-   };
-   firebase.initializeApp(config);
-// set the variable to firebase for future reference
-   var database = firebase.database();
-  //  var data = new firebase('https://trainscheduler-d471e.firebaseio.com/');
-
-  // function for submitting new train data
-
-  $('#submitNewTrain').on('click',function(){
-// hold user inputs in variables
-  var train = $('#inputTrainName').val().trim();
-  var destination = $('#inputDestination').val().trim();
-  var frequency = $('#inputFrequency').val().trim();
-  var arrival = moment($('#inputArrival').val().trim(), 'HH:mm').subtract(1,'years');
-  // var minutesAway = $('inputMinutes').val().trim();
-
-  var userTrain = {
-                  TrainName: train,  Dest: destination
-                  ,  Freq: frequency, NextArrival:arrival
-                  };
-
-  console.log(train);
-  console.log(destination);
-  console.log(frequency);
-  console.log(arrival);
-  // console.log(minutesAway);
-
-// push user inputs to the database
-  database.ref().push(userTrain);
-
-//clear user input fields
-  $('#inputTrainName').val("")
-  $('#inputDestination').val("")
-  $('#inputFrequency').val("")
-  $('#inputArrival').val("")
-
-  });
-
-database.ref().on("child_added", function (childSnapshot) {
-
-var ftrain = childSnapshot.val().TrainName;
-var fdestination = childSnapshot.val().Dest;
-var ffreq = childSnapshot.val().Freq;
-var farrival = childSnapshot.val().NextArrival;
-
-
-		var modulus = moment().diff(moment.unix(farrival), "minutes") % ffreq ;
-		var minutesLeft = ffreq - modulus;
-
+$(document).ready(function(){
+	// 1. Link to Firebase
+	
+    var trainData = new Firebase("https://trainscheduler-d471e.firebaseio.com/");
 	
 
-console.log(ftrain);
-console.log(fdestination);
-console.log(ffreq);
-console.log(farrival);
 
-$('#timeTable').append('<tr><td>'
-+ftrain+'</td><td>'
-+fdestination+'</td><td>'
-+ffreq+'</td><td>'
-+farrival+'</td><td>'
-+minutesLeft+'</td></tr>');
+	// 2. Button for adding Trains
+	$("#addTrainBtn").on("click", function(){
 
-})
+		// Grabs user input and assign to variables
+		var trainName = $("#trainNameInput").val().trim();
+		// var lineName = $("#lineInput").val().trim();
+		var destination = $("#destinationInput").val().trim();
+		var trainTimeInput = moment($("#trainTimeInput").val().trim(), "HH:mm").subtract(10, "years").format("X");;
+		var frequencyInput = $("#frequencyInput").val().trim();
 
+		// Test for variables entered
+		console.log(trainName);
+		// console.log(lineName);
+		console.log(destination);
+		console.log(trainTimeInput);
+		console.log(frequencyInput);
+
+		// Creates local "temporary" object for holding train data
+		// Will push this to firebase
+		var newTrain = {
+			name:  trainName,
+			// line: lineName,
+			destination: destination,
+			trainTime: trainTimeInput,
+			frequency: frequencyInput,
+		}
+
+		// pushing trainInfo to Firebase
+		trainData.push(newTrain);
+
+		// clear text-boxes
+		$("#trainNameInput").val("");
+		// $("#lineInput").val("");
+		$("#destinationInput").val("");
+		$("#trainInput").val("");
+		$("#frequencyInput").val("");
+
+		// Prevents page from refreshing
+		// return false;
+	});
+
+	trainData.on("child_added", function(childSnapshot, prevChildKey){
+
+		console.log(childSnapshot.val());
+
+		// assign firebase variables to snapshots.
+		var firebaseName = childSnapshot.val().name;
+		// var firebaseLine = childSnapshot.val().line;
+		var firebaseDestination = childSnapshot.val().destination;
+		var firebaseTrainTimeInput = childSnapshot.val().trainTime;
+		var firebaseFrequency = childSnapshot.val().frequency;
+		
+		var diffTime = moment().diff(moment.unix(firebaseTrainTimeInput), "minutes");
+		var timeRemainder = moment().diff(moment.unix(firebaseTrainTimeInput), "minutes") % firebaseFrequency ;
+		var minutes = firebaseFrequency - timeRemainder;
+
+		var nextTrainArrival = moment().add(minutes, "m").format("hh:mm A"); 
+		
+		// Test for correct times and info
+		console.log(minutes);
+		console.log(nextTrainArrival);
+		console.log(moment().format("hh:mm A"));
+		console.log(nextTrainArrival);
+		console.log(moment().format("X"));
+
+		// Append train info to table on page
+		$("#trainTable > tbody").append("<tr><td>" + firebaseName + "</td><td>" + firebaseDestination + "</td><td>" + firebaseFrequency + " mins" + "</td><td>" + nextTrainArrival + "</td><td>" + minutes + "</td></tr>");
+
+	});
 });
